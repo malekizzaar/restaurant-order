@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سفارش آنلاین غذا | رستوران خوش‌مزه</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e11d48;
+            --primary-dark: #be123c;
+            --accent: #f43f5e;
+            --bg: #fff1f2;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border: #fecdd3;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Vazirmatn', system-ui, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 680px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 15px 40px -10px rgba(225, 29, 72, 0.15);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: white;
+            padding: 1.8rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.3rem;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .stepper {
+            display: flex;
+            justify-content: space-between;
+            padding: 1.2rem 1.5rem;
+            background: #fff1f2;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            transition: all 0.3s;
+        }
+
+        .step-item.active {
+            color: var(--primary);
+        }
+
+        .step-badge {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #fda4af;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .step-item.active .step-badge {
+            background: var(--primary);
+        }
+
+        .step-content {
+            padding: 2rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.4rem;
+        }
+
+        .section-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .grid-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .category-card, .item-card {
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            padding: 1.1rem 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            user-select: none;
+        }
+
+        .category-card:hover, .item-card:hover {
+            border-color: var(--accent);
+            background: #fff1f2;
+        }
+
+        .category-card.selected, .item-card.selected {
+            border-color: var(--primary);
+            background: #ffe4e6;
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.12);
+        }
+
+        .category-card span, .item-card .name {
+            font-weight: 700;
+            font-size: 1rem;
+            display: block;
+        }
+
+        .item-card .price {
+            font-size: 0.85rem;
+            color: var(--primary);
+            margin-top: 0.3rem;
+            font-weight: 600;
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            margin-top: 0.7rem;
+        }
+
+        .quantity-control button {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .quantity-control button:disabled {
+            background: #fda4af;
+            cursor: not-allowed;
+        }
+
+        .quantity-control span {
+            font-weight: 700;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        /* بخش مواد اضافی پیتزا */
+        .toppings-section {
+            margin-top: 1.5rem;
+            padding: 1.2rem;
+            background: #fff1f2;
+            border-radius: 14px;
+            border: 2px dashed var(--border);
+            display: none;
+        }
+
+        .toppings-section.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .toppings-title {
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 0.8rem;
+            font-size: 1.05rem;
+        }
+
+        .toppings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.7rem;
+        }
+
+        .topping-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 0.7rem 0.9rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .topping-item:hover {
+            border-color: var(--accent);
+        }
+
+        .topping-item.selected {
+            border-color: var(--primary);
+            background: #ffe4e6;
+        }
+
+        .topping-item input {
+            display: none;
+        }
+
+        .topping-price {
+            margin-right: auto;
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.3rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.15);
+        }
+
+        .delivery-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .delivery-options label {
+            flex: 1;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .delivery-options input {
+            display: none;
+        }
+
+        .delivery-options label.selected {
+            border-color: var(--primary);
+            background: #ffe4e6;
+        }
+
+        .total-box {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+            color: white;
+            border-radius: 16px;
+            padding: 1.3rem;
+            margin-top: 1.5rem;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .total-row.final {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-top: 0.8rem;
+            padding-top: 0.8rem;
+            border-top: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .footer-nav {
+            padding: 1.3rem 2rem;
+            background: #fff1f2;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.8rem 1.6rem;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-prev {
+            background: #fecdd3;
+            color: #9f1239;
+        }
+
+        .btn-prev:hover {
+            background: #fda4af;
+        }
+
+        .btn-next {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-next:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .summary-card {
+            background: #fff1f2;
+            border: 2px dashed var(--primary);
+            border-radius: 14px;
+            padding: 1.3rem;
+            line-height: 1.9;
+            font-size: 0.95rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .toppings-summary {
+            font-size: 0.85rem;
+            color: #9f1239;
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- هدر -->
+    <div class="header">
+        <h1>🍔 سفارش آنلاین غذا</h1>
+        <p>رستوران خوش‌مزه | سریع و داغ به دستت می‌رسه</p>
+    </div>
+
+    <!-- نوار مراحل -->
+    <div class="stepper">
+        <div class="step-item active" id="badge-1">
+            <span class="step-badge">۱</span> دسته‌بندی
+        </div>
+        <div class="step-item" id="badge-2">
+            <span class="step-badge">۲</span> انتخاب غذا
+        </div>
+        <div class="step-item" id="badge-3">
+            <span class="step-badge">۳</span> تحویل
+        </div>
+        <div class="step-item" id="badge-4">
+            <span class="step-badge">۴</span> تأیید
+        </div>
+    </div>
+
+    <form id="orderForm">
+        <!-- مرحله ۱: انتخاب دسته‌بندی -->
+        <div class="step-content active" id="step-1">
+            <h2 class="section-title">چی میل داری؟</h2>
+            <p class="section-desc">یکی از دسته‌ها را انتخاب کن</p>
+
+            <div class="grid-options">
+                <div class="category-card" data-category="sandwich" onclick="selectCategory(this)">
+                    <span>🥪 ساندویچ</span>
+                </div>
+                <div class="category-card" data-category="pizza" onclick="selectCategory(this)">
+                    <span>🍕 پیتزا</span>
+                </div>
+                <div class="category-card" data-category="drink" onclick="selectCategory(this)">
+                    <span>🥤 نوشیدنی</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- مرحله ۲: انتخاب آیتم‌ها + مواد اضافی پیتزا -->
+        <div class="step-content" id="step-2">
+            <h2 class="section-title">انتخاب آیتم‌ها</h2>
+            <p class="section-desc">تعداد مورد نظرت را مشخص کن</p>
+
+            <div id="itemsContainer" class="grid-options">
+                <!-- آیتم‌ها با جاوااسکریپت پر می‌شوند -->
+            </div>
+
+            <!-- بخش مواد اضافی فقط برای پیتزا -->
+            <div class="toppings-section" id="toppingsSection">
+                <div class="toppings-title">🍕 مواد اضافی روی پیتزا (اختیاری)</div>
+                <div class="toppings-grid" id="toppingsGrid">
+                    <!-- مواد با جاوااسکریپت پر می‌شوند -->
+                </div>
+            </div>
+        </div>
+
+        <!-- مرحله ۳: اطلاعات تحویل -->
+        <div class="step-content" id="step-3">
+            <h2 class="section-title">نحوه دریافت سفارش</h2>
+            <p class="section-desc">آدرس یا تحویل حضوری را مشخص کن</p>
+
+            <div class="delivery-options">
+                <label id="label-delivery" onclick="selectDelivery('delivery')">
+                    <input type="radio" name="deliveryType" value="delivery">
+                    🚚 ارسال به آدرس
+                </label>
+                <label id="label-pickup" onclick="selectDelivery('pickup')">
+                    <input type="radio" name="deliveryType" value="pickup">
+                    🏪 تحویل حضوری
+                </label>
+            </div>
+
+            <div id="addressBox" class="form-group hidden">
+                <label for="address">آدرس کامل:</label>
+                <textarea id="address" rows="3" placeholder="خیابان، کوچه، پلاک، واحد..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">شماره تماس:</label>
+                <input type="text" id="phone" placeholder="۰۹۱۲۱۲۳۴۵۶۷" maxlength="11">
+            </div>
+
+            <div class="form-group">
+                <label for="name">نام و نام خانوادگی:</label>
+                <input type="text" id="name" placeholder="مثال: علی رضایی">
+            </div>
+        </div>
+
+        <!-- مرحله ۴: خلاصه و تأیید -->
+        <div class="step-content" id="step-4">
+            <h2 class="section-title">خلاصه سفارش</h2>
+            <p class="section-desc">لطفاً اطلاعات را بررسی کنید</p>
+
+            <div class="summary-card" id="summaryContent">
+                <!-- خلاصه با جاوااسکریپت پر می‌شود -->
+            </div>
+
+            <div class="total-box" id="totalBox">
+                <!-- محاسبات اینجا نمایش داده می‌شود -->
+            </div>
+        </div>
+    </form>
+
+    <!-- دکمه‌های ناوبری -->
+    <div class="footer-nav">
+        <button type="button" class="btn btn-prev" id="btnPrev" onclick="prevStep()" disabled>قبلی</button>
+        <button type="button" class="btn btn-next" id="btnNext" onclick="nextStep()">مرحله بعد</button>
+    </div>
+</div>
+
+<script>
+    // داده‌های منو
+    const menu = {
+        sandwich: [
+            { id: 'burger', name: 'برگر مخصوص', price: 185000 },
+            { id: 'hotdog', name: 'هات‌داگ', price: 120000 },
+            { id: 'chicken', name: 'فیله مرغ', price: 165000 },
+            { id: 'ham', name: 'ژامبون', price: 145000 }
+        ],
+        pizza: [
+            { id: 'italian', name: 'پیتزا ایتالیایی', price: 220000 },
+            { id: 'american', name: 'پیتزا آمریکایی', price: 245000 }
+        ],
+        drink: [
+            { id: 'coca', name: 'کوکا کولا', price: 35000 },
+            { id: 'pepsi', name: 'پپسی', price: 35000 },
+            { id: 'delester', name: 'دلستر', price: 40000 },
+            { id: 'doogh', name: 'دوغ', price: 25000 }
+        ]
+    };
+
+    // مواد اضافی پیتزا
+    const toppings = [
+        { id: 'mushroom', name: 'قارچ', price: 25000 },
+        { id: 'pepperoni', name: 'پپرونی', price: 35000 },
+        { id: 'extra-cheese', name: 'پنیر اضافه', price: 30000 },
+        { id: 'olive', name: 'زیتون', price: 20000 },
+        { id: 'corn', name: 'ذرت', price: 18000 },
+        { id: 'sausage', name: 'سوسیس', price: 32000 },
+        { id: 'bell-pepper', name: 'فلفل دلمه‌ای', price: 15000 },
+        { id: 'onion', name: 'پیاز', price: 12000 }
+    ];
+
+    let currentStep = 1;
+    let selectedCategory = null;
+    let cart = {};          // { id: quantity }
+    let selectedToppings = {}; // { toppingId: true }
+
+    // انتخاب دسته‌بندی
+    function selectCategory(element) {
+        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+        element.classList.add('selected');
+        selectedCategory = element.dataset.category;
+
+        // پاک کردن مواد قبلی وقتی دسته‌بندی عوض می‌شود
+        selectedToppings = {};
+        document.getElementById('toppingsSection').classList.remove('show');
+    }
+
+    // ساخت لیست آیتم‌ها
+    function renderItems() {
+        const container = document.getElementById('itemsContainer');
+        container.innerHTML = '';
+
+        menu[selectedCategory].forEach(item => {
+            const qty = cart[item.id] || 0;
+            const card = document.createElement('div');
+            card.className = 'item-card' + (qty > 0 ? ' selected' : '');
+            card.innerHTML = `
+                <div class="name">${item.name}</div>
+                <div class="price">${item.price.toLocaleString()} تومان</div>
+                <div class="quantity-control">
+                    <button type="button" onclick="changeQty('${item.id}', -1)" ${qty === 0 ? 'disabled' : ''}>−</button>
+                    <span>${qty}</span>
+                    <button type="button" onclick="changeQty('${item.id}', 1)">+</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        // اگر پیتزا بود، بخش مواد را نشان بده
+        const toppingsSection = document.getElementById('toppingsSection');
+        if (selectedCategory === 'pizza') {
+            toppingsSection.classList.add('show');
+            renderToppings();
+        } else {
+            toppingsSection.classList.remove('show');
+            selectedToppings = {};
+        }
+    }
+
+    // ساخت لیست مواد اضافی
+    function renderToppings() {
+        const grid = document.getElementById('toppingsGrid');
+        grid.innerHTML = '';
+
+        toppings.forEach(t => {
+            const isSelected = selectedToppings[t.id];
+            const div = document.createElement('div');
+            div.className = 'topping-item' + (isSelected ? ' selected' : '');
+            div.onclick = () => toggleTopping(t.id);
+            div.innerHTML = `
+                <span>${t.name}</span>
+                <span class="topping-price">+${t.price.toLocaleString()}</span>
+            `;
+            grid.appendChild(div);
+        });
+    }
+
+    // انتخاب/حذف ماده اضافی
+    function toggleTopping(id) {
+        if (selectedToppings[id]) {
+            delete selectedToppings[id];
+        } else {
+            selectedToppings[id] = true;
+        }
+        renderToppings();
+    }
+
+    // تغییر تعداد
+    function changeQty(id, delta) {
+        cart[id] = (cart[id] || 0) + delta;
+        if (cart[id] <= 0) delete cart[id];
+        renderItems();
+    }
+
+    // انتخاب نوع تحویل
+    function selectDelivery(type) {
+        document.getElementById('label-delivery').classList.remove('selected');
+        document.getElementById('label-pickup').classList.remove('selected');
+        document.getElementById('label-' + type).classList.add('selected');
+
+        document.querySelector(`input[value="${type}"]`).checked = true;
+
+        if (type === 'delivery') {
+            document.getElementById('addressBox').classList.remove('hidden');
+        } else {
+            document.getElementById('addressBox').classList.add('hidden');
+        }
+    }
+
+    // محاسبه قیمت‌ها
+    function calculateTotal() {
+        let subtotal = 0;
+
+        // قیمت آیتم‌های اصلی
+        for (let id in cart) {
+            const item = [...menu.sandwich, ...menu.pizza, ...menu.drink].find(i => i.id === id);
+            if (item) subtotal += item.price * cart[id];
+        }
+
+        // قیمت مواد اضافی
+        let pizzaCount = 0;
+        if (cart['italian']) pizzaCount += cart['italian'];
+        if (cart['american']) pizzaCount += cart['american'];
+
+        let toppingsTotal = 0;
+        for (let tid in selectedToppings) {
+            const topping = toppings.find(t => t.id === tid);
+            if (topping) {
+                toppingsTotal += topping.price * (pizzaCount || 1);
+            }
+        }
+
+        subtotal += toppingsTotal;
+
+        let discount = 0;
+        if (subtotal >= 200000) {
+            discount = Math.floor(subtotal * 0.1);
+        }
+
+        const total = subtotal - discount;
+        return { subtotal, discount, total, toppingsTotal };
+    }
+
+    // ساخت خلاصه
+    function renderSummary() {
+        let html = '<strong>آیتم‌های سفارش:</strong><br>';
+
+        for (let id in cart) {
+            const item = [...menu.sandwich, ...menu.pizza, ...menu.drink].find(i => i.id === id);
+            if (item) {
+                html += `• ${item.name} × ${cart[id]} = ${(item.price * cart[id]).toLocaleString()} تومان<br>`;
+            }
+        }
+
+        // نمایش مواد اضافی
+        const selectedToppingNames = [];
+        for (let tid in selectedToppings) {
+            const t = toppings.find(x => x.id === tid);
+            if (t) selectedToppingNames.push(t.name);
+        }
+
+        if (selectedToppingNames.length > 0) {
+            html += `<div class="toppings-summary">➕ مواد اضافی: ${selectedToppingNames.join('، ')}</div>`;
+        }
+
+        const name = document.getElementById('name').value || '—';
+        const phone = document.getElementById('phone').value || '—';
+        const deliveryType = document.querySelector('input[name="deliveryType"]:checked')?.value;
+        const address = document.getElementById('address').value || '—';
+
+        html += `<br><strong>نام:</strong> ${name}<br>`;
+        html += `<strong>تلفن:</strong> ${phone}<br>`;
+        html += `<strong>نحوه دریافت:</strong> ${deliveryType === 'delivery' ? 'ارسال به آدرس' : 'تحویل حضوری'}<br>`;
+        if (deliveryType === 'delivery') {
+            html += `<strong>آدرس:</strong> ${address}`;
+        }
+
+        document.getElementById('summaryContent').innerHTML = html;
+
+        const { subtotal, discount, total, toppingsTotal } = calculateTotal();
+        document.getElementById('totalBox').innerHTML = `
+            <div class="total-row">
+                <span>جمع کل:</span>
+                <span>${subtotal.toLocaleString()} تومان</span>
+            </div>
+            ${toppingsTotal > 0 ? `
+            <div class="total-row">
+                <span>مواد اضافی:</span>
+                <span>${toppingsTotal.toLocaleString()} تومان</span>
+            </div>` : ''}
+            <div class="total-row">
+                <span>تخفیف ${discount > 0 ? '(۱۰٪)' : ''}:</span>
+                <span>${discount > 0 ? '-' + discount.toLocaleString() + ' تومان' : '۰ تومان'}</span>
+            </div>
+            <div class="total-row final">
+                <span>مبلغ قابل پرداخت:</span>
+                <span>${total.toLocaleString()} تومان</span>
+            </div>
+            ${discount > 0 ? '<div style="margin-top:0.5rem;font-size:0.85rem;">🎉 تخفیف ۱۰٪ به خاطر سفارش بالای ۲۰۰ هزار اعمال شد!</div>' : ''}
+        `;
+    }
+
+    // اعتبارسنجی هر مرحله
+    function validateStep(step) {
+        if (step === 1) {
+            if (!selectedCategory) {
+                alert('لطفاً یک دسته‌بندی انتخاب کنید');
+                return false;
+            }
+        }
+        if (step === 2) {
+            if (Object.keys(cart).length === 0) {
+                alert('حداقل یک آیتم انتخاب کنید');
+                return false;
+            }
+        }
+        if (step === 3) {
+            const name = document.getElementById('name').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const deliveryType = document.querySelector('input[name="deliveryType"]:checked');
+
+            if (!name || !phone || !deliveryType) {
+                alert('لطفاً تمام فیلدها را پر کنید');
+                return false;
+            }
+            if (deliveryType.value === 'delivery' && !document.getElementById('address').value.trim()) {
+                alert('آدرس را وارد کنید');
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // رفتن به مرحله بعد
+    function nextStep() {
+        if (!validateStep(currentStep)) return;
+
+        if (currentStep === 1) {
+            renderItems();
+        }
+        if (currentStep === 3) {
+            renderSummary();
+        }
+
+        if (currentStep < 4) {
+            currentStep++;
+            updateUI();
+        } else {
+            alert('🎉 سفارش شما با موفقیت ثبت شد!\nبه زودی با شما تماس می‌گیریم.');
+        }
+    }
+
+    // برگشت به مرحله قبل
+    function prevStep() {
+        if (currentStep > 1) {
+            currentStep--;
+            updateUI();
+        }
+    }
+
+    // به‌روزرسانی رابط کاربری
+    function updateUI() {
+        document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+        document.getElementById(`step-${currentStep}`).classList.add('active');
+
+        document.querySelectorAll('.step-item').forEach((el, index) => {
+            el.classList.toggle('active', index + 1 <= currentStep);
+        });
+
+        document.getElementById('btnPrev').disabled = currentStep === 1;
+        document.getElementById('btnNext').textContent = currentStep === 4 ? 'ثبت نهایی سفارش' : 'مرحله بعد';
+    }
+
+    // شروع
+    updateUI();
+</script>
+</body>
+</html>
